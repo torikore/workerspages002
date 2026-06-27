@@ -75,5 +75,5 @@ wrangler d1 migrations apply minigame-gate-db --remote
 
 | slug | タイトル |
 |------|----------|
-| `tap-counter` | タップカウンター |
 | `number-guess` | 数字当て |
+| `tetris` | テトリス |

@@ -2,19 +2,9 @@ const MOBILE_BREAKPOINT = 768;
 
 const FALLBACK_GAMES = [
   {
-    slug: "tap-counter",
-    title: "タップカウンター",
-    path: "/games/tap-counter/",
-  },
-  {
     slug: "number-guess",
     title: "数字当て",
     path: "/games/number-guess/",
-  },
-  {
-    slug: "dream-plains",
-    title: "ドリーム平原 1面",
-    path: "/games/dream-plains/",
   },
   {
     slug: "tetris",
