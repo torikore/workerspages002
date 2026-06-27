@@ -21,6 +21,11 @@ const FALLBACK_GAMES = [
     title: "ロードランナー",
     path: "/games/lode-runner/",
   },
+  {
+    slug: "simple-pinball",
+    title: "シンプルピンボール",
+    path: "/games/simple-pinball/",
+  },
 ];
 
 const sidebar = document.getElementById("sidebar");

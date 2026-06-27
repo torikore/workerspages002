@@ -79,3 +79,4 @@ wrangler d1 migrations apply minigame-gate-db --remote
 | `tetris` | テトリス |
 | `simple-pacman` | シンプルパックマン |
 | `lode-runner` | ロードランナー |
+| `simple-pinball` | シンプルピンボール |

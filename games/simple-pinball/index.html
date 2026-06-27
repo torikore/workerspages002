@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>シンプルピンボール</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #0a0a1a;
+      color: #fff;
+      touch-action: none;
+      user-select: none;
+    }
+
+    #game-root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 0.5rem;
+      gap: 0.5rem;
+    }
+
+    #hud {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    #canvas-wrap {
+      position: relative;
+      max-width: 100%;
+    }
+
+    canvas {
+      display: block;
+      max-width: min(95vw, 400px);
+      height: auto;
+      border: 3px solid #4a5568;
+      border-radius: 8px;
+      background: #111;
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.78);
+      text-align: center;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    #overlay.is-visible {
+      display: flex;
+    }
+
+    #overlay h2 {
+      margin: 0 0 0.5rem;
+      color: #feca57;
+    }
+
+    #overlay p {
+      margin: 0 0 1rem;
+      font-size: 0.875rem;
+    }
+
+    #overlay button {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0.625rem 1.25rem;
+      border: none;
+      border-radius: 999px;
+      background: #feca57;
+      color: #111;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #touch-controls {
+      display: none;
+      width: 100%;
+      max-width: 400px;
+      gap: 0.5rem;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .touch-btn {
+      min-height: 56px;
+      border: 2px solid #4a5568;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font: inherit;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .touch-btn:active,
+    .touch-btn.is-active {
+      background: rgba(254, 202, 87, 0.4);
+    }
+
+    #hint {
+      font-size: 0.6875rem;
+      color: #888;
+      text-align: center;
+    }
+
+    @media (pointer: coarse) {
+      #touch-controls {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-root">
+    <div id="hud">
+      <span id="score">スコア: 0</span>
+      <span id="balls">ボール: 3</span>
+    </div>
+
+    <div id="canvas-wrap">
+      <canvas id="game"></canvas>
+      <div id="overlay">
+        <h2 id="overlay-title"></h2>
+        <p id="overlay-msg"></p>
+        <button type="button" id="overlay-btn">スタート</button>
+      </div>
+    </div>
+
+    <div id="touch-controls">
+      <button type="button" class="touch-btn" data-action="left">左フリッパー</button>
+      <button type="button" class="touch-btn" data-action="launch">発射</button>
+      <button type="button" class="touch-btn" data-action="right">右フリッパー</button>
+    </div>
+
+    <p id="hint">Z / ← 左　X / → 右　Space 発射</p>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
