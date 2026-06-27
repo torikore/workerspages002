@@ -16,6 +16,11 @@ const FALLBACK_GAMES = [
     title: "シンプルパックマン",
     path: "/games/simple-pacman/",
   },
+  {
+    slug: "lode-runner",
+    title: "ロードランナー",
+    path: "/games/lode-runner/",
+  },
 ];
 
 const sidebar = document.getElementById("sidebar");

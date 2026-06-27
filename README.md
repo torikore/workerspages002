@@ -78,3 +78,4 @@ wrangler d1 migrations apply minigame-gate-db --remote
 | `number-guess` | 数字当て |
 | `tetris` | テトリス |
 | `simple-pacman` | シンプルパックマン |
+| `lode-runner` | ロードランナー |
