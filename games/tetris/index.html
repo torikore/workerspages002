@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>テトリス</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+      color: #eee;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    #game-root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 0.5rem;
+      gap: 0.5rem;
+    }
+
+    #top-bar {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #main-area {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      max-width: 100%;
+    }
+
+    #board-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    canvas#board {
+      display: block;
+      border: 3px solid #4a5568;
+      border-radius: 4px;
+      background: #0d1117;
+      max-width: min(70vw, 280px);
+      max-height: min(80dvh, 560px);
+      width: auto;
+      height: auto;
+    }
+
+    #side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-width: 80px;
+    }
+
+    .panel-box {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    .panel-label {
+      font-size: 0.6875rem;
+      color: #aab;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    canvas#next {
+      display: block;
+      margin: 0 auto;
+      background: #0d1117;
+      border-radius: 4px;
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 4px;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    #overlay.is-visible {
+      display: flex;
+    }
+
+    #overlay h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.25rem;
+    }
+
+    #overlay p {
+      margin: 0 0 1rem;
+      font-size: 0.875rem;
+      opacity: 0.9;
+    }
+
+    #overlay button {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0.625rem 1.25rem;
+      border: none;
+      border-radius: 999px;
+      background: #48dbfb;
+      color: #1a1a2e;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #touch-controls {
+      display: none;
+      width: 100%;
+      max-width: 360px;
+      gap: 0.375rem;
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .touch-btn {
+      min-height: 52px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font: inherit;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .touch-btn:active,
+    .touch-btn.is-active {
+      background: rgba(72, 219, 251, 0.35);
+    }
+
+    .touch-btn.wide {
+      grid-column: span 2;
+    }
+
+    #hint {
+      font-size: 0.6875rem;
+      color: #889;
+      text-align: center;
+    }
+
+    @media (pointer: coarse) {
+      #touch-controls {
+        display: grid;
+      }
+
+      #hint-desktop {
+        display: none;
+      }
+    }
+
+    @media (max-width: 400px) {
+      #main-area {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      #side-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-root">
+    <div id="top-bar">
+      <span id="score">スコア: 0</span>
+      <span id="lines">ライン: 0</span>
+      <span id="level">Lv: 1</span>
+    </div>
+
+    <div id="main-area">
+      <div id="board-wrap">
+        <canvas id="board" width="200" height="400"></canvas>
+        <div id="overlay">
+          <h2 id="overlay-title"></h2>
+          <p id="overlay-msg"></p>
+          <button type="button" id="overlay-btn">プレイ</button>
+        </div>
+      </div>
+
+      <div id="side-panel">
+        <div class="panel-box">
+          <div class="panel-label">NEXT</div>
+          <canvas id="next" width="80" height="80"></canvas>
+        </div>
+        <div class="panel-box">
+          <div class="panel-label">操作</div>
+          <div id="hint-desktop" style="font-size:0.6875rem;line-height:1.6;color:#aab;">
+            ←→ 移動<br>
+            ↑ 回転<br>
+            ↓ 落下<br>
+            Space 硬降下
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="touch-controls">
+      <button type="button" class="touch-btn" data-action="left">←</button>
+      <button type="button" class="touch-btn" data-action="rotate">回転</button>
+      <button type="button" class="touch-btn" data-action="right">→</button>
+      <button type="button" class="touch-btn" data-action="down">↓</button>
+      <button type="button" class="touch-btn" data-action="drop">落とす</button>
+    </div>
+
+    <p id="hint">P キーで一時停止</p>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

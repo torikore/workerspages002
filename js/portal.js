@@ -16,6 +16,11 @@ const FALLBACK_GAMES = [
     title: "ドリーム平原 1面",
     path: "/games/dream-plains/",
   },
+  {
+    slug: "tetris",
+    title: "テトリス",
+    path: "/games/tetris/",
+  },
 ];
 
 const sidebar = document.getElementById("sidebar");
