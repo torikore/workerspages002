@@ -33,11 +33,11 @@ const MAZE_RAW = [
   "###.#.#####.#.###",
   "#.....#...#.....#",
   "#.###.#.#.#.###.#",
-  "#...#.......#...#",
+  "#...#...#...#...#",
   "###.#.#####.#.###",
   "#.......#.......#",
   "#.#####.#.#####.#",
-  "#*..#... ... ...#",
+  "#*.............*#",
   "#.###.###.###.###",
   "#...............#",
   "#################",
@@ -83,12 +83,40 @@ function parseMaze() {
   }
 
   const ghostStarts = [
-    [8, 8],
     [7, 9],
+    [8, 9],
     [9, 9],
-    [8, 10],
+    [7, 10],
   ];
   ghosts = ghostStarts.map((pos, i) => createGhost(pos[0], pos[1], i));
+
+  const reachable = markReachable(
+    Math.round((player.x - TILE / 2) / TILE),
+    Math.round((player.y - TILE / 2) / TILE)
+  );
+  dots = dots.filter((d) => reachable[d.row][d.col]);
+  powerPellets = powerPellets.filter((p) => reachable[p.row][p.col]);
+}
+
+function markReachable(startCol, startRow) {
+  const reachable = Array.from({ length: rows }, () => Array(cols).fill(false));
+  if (!canEnter(startCol, startRow)) return reachable;
+
+  const queue = [[startCol, startRow]];
+  reachable[startRow][startCol] = true;
+
+  while (queue.length > 0) {
+    const [c, r] = queue.shift();
+    for (const d of Object.values(DIR)) {
+      const nc = c + d.x;
+      const nr = r + d.y;
+      if (canEnter(nc, nr) && !reachable[nr][nc]) {
+        reachable[nr][nc] = true;
+        queue.push([nc, nr]);
+      }
+    }
+  }
+  return reachable;
 }
 
 function createPlayer(col, row) {
@@ -101,16 +129,22 @@ function createPlayer(col, row) {
 }
 
 function createGhost(col, row, index) {
-  return {
+  const ghost = {
     x: col * TILE + TILE / 2,
     y: row * TILE + TILE / 2,
-    dir: { x: -1, y: 0 },
+    dir: { x: 0, y: 0 },
     color: GHOST_COLORS[index],
     index,
     mode: "normal",
     homeCol: col,
     homeRow: row,
   };
+  const options = availableDirs(col, row);
+  if (options.length > 0) {
+    const pick = options[Math.floor(Math.random() * options.length)];
+    ghost.dir = { x: pick.x, y: pick.y };
+  }
+  return ghost;
 }
 
 function isWall(col, row) {
@@ -132,10 +166,18 @@ function gridPos(entity) {
   };
 }
 
-function atCenter(entity, speed) {
-  const col = (entity.x - TILE / 2) % TILE;
-  const row = (entity.y - TILE / 2) % TILE;
-  return Math.abs(col) < speed && Math.abs(row) < speed;
+function tileCenter(col, row) {
+  return { x: col * TILE + TILE / 2, y: row * TILE + TILE / 2 };
+}
+
+function distToCenter(entity) {
+  const { col, row } = gridPos(entity);
+  const center = tileCenter(col, row);
+  return Math.hypot(entity.x - center.x, entity.y - center.y);
+}
+
+function atCenter(entity) {
+  return distToCenter(entity) < 0.6;
 }
 
 function snapToCenter(entity) {
@@ -176,6 +218,8 @@ function moveEntity(entity, speed) {
   if (!canEnter(c + entity.dir.x, r + entity.dir.y)) {
     snapToCenter(entity);
     entity.dir = { x: 0, y: 0 };
+  } else if (distToCenter(entity) < speed) {
+    snapToCenter(entity);
   }
 }
 
@@ -198,18 +242,19 @@ function dist(a, b) {
 function chooseGhostDir(ghost) {
   const { col, row } = gridPos(ghost);
   const options = availableDirs(col, row).filter(
-    (d) => !(d.x === -ghost.dir.x && d.y === -ghost.dir.y)
+    (d) => !(ghost.dir.x && d.x === -ghost.dir.x && d.y === -ghost.dir.y)
   );
-  if (options.length === 0) return opposite(ghost.dir);
+  const choices = options.length > 0 ? options : availableDirs(col, row);
+  if (choices.length === 0) return opposite(ghost.dir);
 
   if (ghost.mode === "frightened") {
-    return options[Math.floor(Math.random() * options.length)];
+    return choices[Math.floor(Math.random() * choices.length)];
   }
 
   const target = gridPos(player);
-  let best = options[0];
+  let best = choices[0];
   let bestDist = Infinity;
-  for (const opt of options) {
+  for (const opt of choices) {
     const d = dist({ col: col + opt.x, row: row + opt.y }, target);
     if (d < bestDist || (d === bestDist && Math.random() < 0.3)) {
       bestDist = d;
@@ -223,12 +268,12 @@ function updatePlayer() {
   const desired = getDesiredDir();
   if (desired) player.nextDir = desired;
 
-  if (atCenter(player, PLAYER_SPEED)) {
+  if (atCenter(player)) {
     snapToCenter(player);
     if (player.nextDir.x || player.nextDir.y) {
       tryTurn(player, player.nextDir);
     }
-    if (!player.dir.x && !player.dir.y && player.nextDir.x) {
+    if (!player.dir.x && !player.dir.y && (player.nextDir.x || player.nextDir.y)) {
       tryTurn(player, player.nextDir);
     }
   }
@@ -267,6 +312,13 @@ function collectItems() {
   }
 }
 
+function updateGhostDirection(ghost) {
+  if (distToCenter(ghost) < 2) snapToCenter(ghost);
+  if (!atCenter(ghost)) return;
+  const chosen = chooseGhostDir(ghost);
+  ghost.dir = { x: chosen.x, y: chosen.y };
+}
+
 function updateGhosts() {
   for (const ghost of ghosts) {
     if (ghost.mode === "eaten") {
@@ -290,13 +342,15 @@ function updateGhosts() {
       continue;
     }
 
-    if (atCenter(ghost, GHOST_SPEED)) {
-      snapToCenter(ghost);
-      const chosen = chooseGhostDir(ghost);
-      ghost.dir = { x: chosen.x, y: chosen.y };
+    if (atCenter(ghost) || (ghost.dir.x === 0 && ghost.dir.y === 0)) {
+      updateGhostDirection(ghost);
     }
 
     moveEntity(ghost, GHOST_SPEED);
+
+    if (ghost.dir.x === 0 && ghost.dir.y === 0) {
+      updateGhostDirection(ghost);
+    }
 
     if (gridPos(ghost).col === gridPos(player).col &&
         gridPos(ghost).row === gridPos(player).row) {
@@ -326,10 +380,10 @@ function loseLife() {
 function resetPositions() {
   player = createPlayer(7, 5);
   const ghostStarts = [
-    [8, 8],
     [7, 9],
+    [8, 9],
     [9, 9],
-    [8, 10],
+    [7, 10],
   ];
   ghosts = ghostStarts.map((pos, i) => createGhost(pos[0], pos[1], i));
 }
