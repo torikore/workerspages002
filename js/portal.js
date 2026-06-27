@@ -11,6 +11,11 @@ const FALLBACK_GAMES = [
     title: "数字当て",
     path: "/games/number-guess/",
   },
+  {
+    slug: "dream-plains",
+    title: "ドリーム平原 1面",
+    path: "/games/dream-plains/",
+  },
 ];
 
 const sidebar = document.getElementById("sidebar");
