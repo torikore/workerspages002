@@ -10,7 +10,8 @@ const livesEl = document.getElementById("lives");
 const dotsLeftEl = document.getElementById("dots-left");
 
 const TILE = 20;
-const SPEED = 2;
+const PLAYER_SPEED = 1;
+const GHOST_SPEED = 0.85;
 const FRIGHTENED_TIME = 480;
 const GHOST_COLORS = ["#ff0000", "#ffb8ff", "#00ffff", "#ffb852"];
 const DIR = {
@@ -131,10 +132,10 @@ function gridPos(entity) {
   };
 }
 
-function atCenter(entity) {
+function atCenter(entity, speed) {
   const col = (entity.x - TILE / 2) % TILE;
   const row = (entity.y - TILE / 2) % TILE;
-  return Math.abs(col) < SPEED && Math.abs(row) < SPEED;
+  return Math.abs(col) < speed && Math.abs(row) < speed;
 }
 
 function snapToCenter(entity) {
@@ -160,11 +161,11 @@ function tryTurn(entity, dir) {
   }
 }
 
-function moveEntity(entity) {
+function moveEntity(entity, speed) {
   if (entity.dir.x === 0 && entity.dir.y === 0) return;
 
-  entity.x += entity.dir.x * SPEED;
-  entity.y += entity.dir.y * SPEED;
+  entity.x += entity.dir.x * speed;
+  entity.y += entity.dir.y * speed;
 
   if (entity.dir.x !== 0 && gridPos(entity).row === 7) {
     if (entity.x < TILE / 2) entity.x = (cols - 1) * TILE + TILE / 2;
@@ -222,7 +223,7 @@ function updatePlayer() {
   const desired = getDesiredDir();
   if (desired) player.nextDir = desired;
 
-  if (atCenter(player)) {
+  if (atCenter(player, PLAYER_SPEED)) {
     snapToCenter(player);
     if (player.nextDir.x || player.nextDir.y) {
       tryTurn(player, player.nextDir);
@@ -232,7 +233,7 @@ function updatePlayer() {
     }
   }
 
-  moveEntity(player);
+  moveEntity(player, PLAYER_SPEED);
   collectItems();
 }
 
@@ -285,17 +286,17 @@ function updateGhosts() {
         }
       }
       if (best) ghost.dir = { x: best.x, y: best.y };
-      moveEntity(ghost);
+      moveEntity(ghost, GHOST_SPEED);
       continue;
     }
 
-    if (atCenter(ghost)) {
+    if (atCenter(ghost, GHOST_SPEED)) {
       snapToCenter(ghost);
       const chosen = chooseGhostDir(ghost);
       ghost.dir = { x: chosen.x, y: chosen.y };
     }
 
-    moveEntity(ghost);
+    moveEntity(ghost, GHOST_SPEED);
 
     if (gridPos(ghost).col === gridPos(player).col &&
         gridPos(ghost).row === gridPos(player).row) {
