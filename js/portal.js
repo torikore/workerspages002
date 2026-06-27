@@ -11,6 +11,11 @@ const FALLBACK_GAMES = [
     title: "テトリス",
     path: "/games/tetris/",
   },
+  {
+    slug: "simple-pacman",
+    title: "シンプルパックマン",
+    path: "/games/simple-pacman/",
+  },
 ];
 
 const sidebar = document.getElementById("sidebar");
