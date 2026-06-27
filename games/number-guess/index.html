@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>数字当て</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      touch-action: manipulation;
+    }
+
+    .panel {
+      width: min(400px, 100%);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.25rem, 5vw, 1.5rem);
+    }
+
+    .hint {
+      min-height: 3rem;
+      margin: 1rem 0;
+      padding: 0.75rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .attempts {
+      color: #aab;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      min-height: 44px;
+      padding: 0.5rem 0.75rem;
+      border: 2px solid #3d5a6c;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      color: inherit;
+      font-size: 1.125rem;
+      font: inherit;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #4dabf7;
+    }
+
+    button {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0.5rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      background: #4dabf7;
+      color: #fff;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover:not(:disabled) {
+      background: #339af0;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .restart-btn {
+      margin-top: 0.5rem;
+      background: transparent;
+      border: 2px solid #4dabf7;
+      color: #4dabf7;
+    }
+
+    .restart-btn:hover:not(:disabled) {
+      background: rgba(77, 171, 247, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>数字当て</h1>
+    <p class="hint" id="hint">1〜100の数字を当ててください</p>
+    <p class="attempts" id="attempts">挑戦回数: 0</p>
+
+    <div class="input-row">
+      <input
+        type="number"
+        id="guess-input"
+        min="1"
+        max="100"
+        inputmode="numeric"
+        placeholder="1〜100"
+        aria-label="予想する数字"
+      >
+      <button type="button" id="guess-btn">判定</button>
+    </div>
+
+    <button type="button" class="restart-btn" id="restart-btn" hidden>もう一度</button>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

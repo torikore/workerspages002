@@ -1,0 +1,54 @@
+---
+description: Pages Functions・D1・Wrangler の規約
+globs: functions/**/*,migrations/**/*,wrangler.toml
+alwaysApply: false
+---
+
+# API・D1 規約
+
+## D1 スキーマ（games テーブル）
+
+```sql
+CREATE TABLE games (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  description TEXT,
+  icon TEXT,
+  path TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  enabled INTEGER NOT NULL DEFAULT 1
+);
+```
+
+- `path` は `/games/{slug}/` 形式
+- `enabled = 0` のゲームは API から返さない
+
+## API エンドポイント
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | `/api/games` | enabled なゲームを sort_order 昇順で返す |
+
+レスポンス例:
+
+```json
+[{ "slug": "tetris", "title": "テトリス", "path": "/games/tetris/", "icon": null }]
+```
+
+## Pages Functions 実装
+
+- `functions/api/games.ts`（または `.js`）に配置
+- D1 バインディング名は `DB`（wrangler.toml と一致させる）
+- エラー時は適切な HTTP ステータスと JSON `{ "error": "..." }` を返す
+
+## Wrangler
+
+- ローカル: `wrangler pages dev`
+- D1 マイグレーション: `wrangler d1 migrations apply`
+- 本番 DB 操作前は必ずローカル D1 で確認
+
+## 無料枠の配慮
+
+- ゲーム一覧 API は Cache-Control で短時間キャッシュ可（例: `max-age=60`）
+- 不要な D1 クエリを増やさない（一覧取得は1クエリで完結）

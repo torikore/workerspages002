@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ミニゲームゲート</title>
+  <link rel="stylesheet" href="/css/portal.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <button
+        type="button"
+        id="menu-toggle"
+        class="menu-toggle"
+        aria-label="メニューを開く"
+        aria-expanded="false"
+        aria-controls="sidebar"
+      >☰</button>
+      <h1 class="site-title">ミニゲームゲート</h1>
+    </header>
+
+    <div class="layout">
+      <aside id="sidebar" class="sidebar" aria-label="ゲーム一覧">
+        <nav>
+          <p class="sidebar-heading">ゲーム一覧</p>
+          <ul id="game-list" class="game-list"></ul>
+        </nav>
+      </aside>
+
+      <div id="overlay" class="overlay" hidden></div>
+
+      <main class="main">
+        <div id="welcome" class="welcome">
+          <p class="welcome-title">ゲームを選んでください</p>
+          <p class="welcome-text">左のメニューから遊びたいゲームを選ぶと、ここに表示されます。</p>
+        </div>
+        <iframe
+          id="game-frame"
+          class="game-frame"
+          title="ゲーム画面"
+          hidden
+        ></iframe>
+      </main>
+    </div>
+  </div>
+
+  <script src="/js/portal.js"></script>
+</body>
+</html>
