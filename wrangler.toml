@@ -5,5 +5,5 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "minigame-gate-db"
-database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+database_id = "4691fdc1-a749-4e97-a576-4dc56be2edf9"
 migrations_dir = "migrations"
