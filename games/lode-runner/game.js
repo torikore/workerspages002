@@ -129,6 +129,11 @@ function isClimbable(col, row) {
   return c === LADDER || c === EXIT;
 }
 
+function canPass(col, row) {
+  const c = cell(col, row);
+  return c !== BRICK && c !== HARD;
+}
+
 function distToCenter(entity) {
   const { col, row } = gridPos(entity);
   const cx = col * TILE + TILE / 2;
@@ -196,14 +201,16 @@ function updateEntity(entity) {
     entity.vx = 0;
     entity.vy = 0;
 
-    if (left) moveHorizontal(entity, -1);
-    if (right) moveHorizontal(entity, 1);
+    if (!entity.inHole) {
+      if (left) moveHorizontal(entity, -1);
+      if (right) moveHorizontal(entity, 1);
 
-    if (isClimbable(col, row)) {
-      if (climb) entity.vy = -SPEED;
-      else if (down) entity.vy = SPEED;
-    } else if (!entitySupport(entity)) {
-      entity.vy = FALL_SPEED;
+      if (isClimbable(col, row)) {
+        if (climb && canPass(col, row - 1)) entity.vy = -SPEED;
+        else if (down && canPass(col, row + 1)) entity.vy = SPEED;
+      } else if (!entitySupport(entity)) {
+        entity.vy = FALL_SPEED;
+      }
     }
   } else {
     entity.vx = 0;
@@ -228,7 +235,7 @@ function updateEntity(entity) {
 
   if (entity.vx !== 0) {
     const nextCol = np.col + Math.sign(entity.vx);
-    if (isSolid(nextCol, np.row)) {
+    if (!canPass(nextCol, np.row)) {
       snapToCenter(entity);
       entity.vx = 0;
     }
@@ -236,17 +243,22 @@ function updateEntity(entity) {
 
   if (entity.vy !== 0) {
     const nextRow = np.row + Math.sign(entity.vy);
-    if (entity.vy > 0 && isSolid(np.col, nextRow) && !isClimbable(np.col, np.row)) {
-      entity.y = nextRow * TILE - TILE / 2 - 0.01;
-      entity.vy = 0;
+    if (entity.vy > 0) {
+      if (isSolid(np.col, nextRow) && !isClimbable(np.col, np.row)) {
+        entity.y = (nextRow - 1) * TILE + TILE / 2;
+        entity.vy = 0;
+      } else if (!canPass(np.col, nextRow) && !isClimbable(np.col, nextRow)) {
+        entity.y = (nextRow - 1) * TILE + TILE / 2;
+        entity.vy = 0;
+      }
     }
-    if (entity.vy < 0 && isSolid(np.col, nextRow)) {
-      entity.y = (nextRow + 1) * TILE + TILE / 2 + 0.01;
+    if (entity.vy < 0 && !canPass(np.col, nextRow)) {
+      entity.y = (nextRow + 1) * TILE + TILE / 2;
       entity.vy = 0;
     }
   }
 
-  if (distToCenter(entity) < SPEED + 0.5) {
+  if (entity.vx === 0 && entity.vy === 0 && distToCenter(entity) < 0.5) {
     snapToCenter(entity);
   }
 
@@ -353,6 +365,7 @@ function startGame() {
   parseLevel();
   updateHud();
   hideOverlay();
+  canvas.focus();
 }
 
 function drawCell(col, row) {
@@ -477,13 +490,19 @@ function resize() {
 }
 
 window.addEventListener("keydown", (e) => {
-  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+  if (e.key.startsWith("Arrow")) {
     e.preventDefault();
+    keys.add(e.key.toLowerCase());
+    return;
   }
   keys.add(e.key.toLowerCase());
 });
 
 window.addEventListener("keyup", (e) => {
+  if (e.key.startsWith("Arrow")) {
+    keys.delete(e.key.toLowerCase());
+    return;
+  }
   keys.delete(e.key.toLowerCase());
 });
 
@@ -518,8 +537,10 @@ overlayBtn.addEventListener("click", () => {
   if (gameState === "ready") {
     hideOverlay();
     gameState = "playing";
+    canvas.focus();
   } else if (gameState === "win" || gameState === "over") {
     startGame();
+    canvas.focus();
   }
 });
 
